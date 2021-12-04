@@ -23,7 +23,10 @@ package nl.tudelft.opencraft.yardstick;
 import com.beust.jcommander.JCommander;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+
+import java.text.MessageFormat;
 import java.time.Duration;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import nl.tudelft.opencraft.yardstick.experiment.Experiment;
@@ -41,6 +44,7 @@ import nl.tudelft.opencraft.yardstick.game.GameArchitecture;
 import nl.tudelft.opencraft.yardstick.game.GameFactory;
 import nl.tudelft.opencraft.yardstick.logging.GlobalLogger;
 import nl.tudelft.opencraft.yardstick.logging.SimpleTimeFormatter;
+import nl.tudelft.opencraft.yardstick.metrics.cloud.aws.AwsCpuUtilization;
 import nl.tudelft.opencraft.yardstick.workload.CsvConverter;
 import nl.tudelft.opencraft.yardstick.workload.WorkloadDumper;
 
@@ -131,10 +135,23 @@ public class Yardstick {
             ex.setWorkloadDumper(new WorkloadDumper());
         }
 
-        Thread t = new Thread(ex);
-        t.setName("experiment-" + behaviorName);
+        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
+            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
+            String platform = cloudMetricsConfig.getString("platform");
+            LOGGER.info(platform);
+            if (platform.equals("aws")) {
+                LOGGER.info("Metrics on platform '" + platform + "' enabled.");
+                AwsCpuUtilization x = new AwsCpuUtilization("AWS-test", new Date(new Date().getTime() - (1000*60*60*24*7)  ), new Date(new Date().getTime()));
+            }
+            else {
+                throw new IllegalArgumentException(MessageFormat.format("Metrics for platform ''{0}'' does not exist", platform));
+            }
+        }
 
-        t.start();
+//        Thread t = new Thread(ex);
+//        t.setName("experiment-" + behaviorName);
+//
+//        t.start();
     }
 
 }

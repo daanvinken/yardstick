@@ -163,12 +163,20 @@
             <version>2.4.4</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-cloudwatch -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-cloudwatch</artifactId>
+            <version>1.12.125</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/lambda -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>lambda</artifactId>
             <version>${aws.sdk.version}</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/netty-nio-client -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>

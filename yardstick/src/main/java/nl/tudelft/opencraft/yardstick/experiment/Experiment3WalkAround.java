@@ -39,7 +39,6 @@ public class Experiment3WalkAround extends Experiment {
     protected void before() throws InterruptedException {
         this.bot = newBot("YSBot-1");
         this.bot.connect();
-
         // TODO: Do something about this
         while (this.bot.getPlayer() == null) {
             try {
