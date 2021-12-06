@@ -38,12 +38,6 @@ public class AwsMetricsClient extends CloudMetricsClient {
         this.period = Integer.parseInt(config.getString("period"));
         this.statisticType = config.getString("statistic");
 
-        this.logger.info(String.format("Retrieving AWS metric '%s' for %s to %s with period '%ds'",
-                this.metricType,
-                this.startTime.toString(),
-                this.endTime.toString(),
-                this.period));
-
         if (this.period < 60) {
             this.logger.warning("Please note you need to have high-precision metrics enabled " +
                     "in order to use a period below 60. This can result in additional charges.");
@@ -54,9 +48,14 @@ public class AwsMetricsClient extends CloudMetricsClient {
                     "AvailableMetrics",
                     config.getString("namespace"),
                     config.getString("cluster-name")
-            );
+        );
+        availableMetrics.run();
 
-            availableMetrics.run();
+        this.logger.info(String.format("Retrieving AWS metric '%s' for %s to %s with period '%ds'",
+                this.metricType,
+                this.startTime.toString(),
+                this.endTime.toString(),
+                this.period));
         }
     }
 

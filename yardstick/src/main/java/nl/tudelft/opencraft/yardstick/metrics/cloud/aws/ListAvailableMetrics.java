@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 public class ListAvailableMetrics extends CloudMetricsClient {
     public ListAvailableMetrics(String name, String namespace, String clusterName) {
         super(name, namespace);
-        this.run();
     }
 
     public void run() {
