@@ -26,7 +26,7 @@ import com.typesafe.config.ConfigFactory;
 
 import java.text.MessageFormat;
 import java.time.Duration;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import nl.tudelft.opencraft.yardstick.experiment.Experiment;
@@ -135,23 +135,28 @@ public class Yardstick {
             ex.setWorkloadDumper(new WorkloadDumper());
         }
 
+//        Thread t = new Thread(ex);
+//        t.setName("experiment-" + behaviorName);
+//
+//        t.start();
+
+        //TODO join thread above
         if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
             Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
             String platform = cloudMetricsConfig.getString("platform");
-            LOGGER.info(platform);
+            //TODO move settings to config and timing from either config file or actual run
             if (platform.equals("aws")) {
                 LOGGER.info("Metrics on platform '" + platform + "' enabled.");
-                AwsCpuUtilization x = new AwsCpuUtilization("AWS-test", new Date(new Date().getTime() - (1000*60*60*24*7)  ), new Date(new Date().getTime()));
+                AwsCpuUtilization x = new AwsCpuUtilization("AWS_test",
+                        LocalDateTime.now().minusHours(2),
+                        LocalDateTime.now(),
+                        "AWS/ECS"
+                );
             }
             else {
                 throw new IllegalArgumentException(MessageFormat.format("Metrics for platform ''{0}'' does not exist", platform));
             }
         }
-
-//        Thread t = new Thread(ex);
-//        t.setName("experiment-" + behaviorName);
-//
-//        t.start();
     }
 
 }
