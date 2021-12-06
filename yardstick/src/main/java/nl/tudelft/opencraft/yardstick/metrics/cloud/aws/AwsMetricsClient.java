@@ -3,6 +3,7 @@ package nl.tudelft.opencraft.yardstick.metrics.cloud.aws;
 import com.typesafe.config.Config;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsClient;
 
+import org.jetbrains.annotations.NotNull;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
 import software.amazon.awssdk.services.cloudwatch.model.GetMetricDataRequest;
 import software.amazon.awssdk.services.cloudwatch.model.Metric;
@@ -27,7 +28,7 @@ public class AwsMetricsClient extends CloudMetricsClient {
     private final String statisticType;
 
 
-    public AwsMetricsClient(Config config, LocalDateTime startTime, LocalDateTime endTime) {
+    public AwsMetricsClient(@NotNull Config config, LocalDateTime startTime, LocalDateTime endTime) {
         super(config.getString("metric-name"), config.getString("namespace"));
         this.startTime = startTime;
         this.endTime = endTime;
@@ -47,15 +48,24 @@ public class AwsMetricsClient extends CloudMetricsClient {
             this.logger.warning("Please note you need to have high-precision metrics enabled " +
                     "in order to use a period below 60. This can result in additional charges.");
         }
+
+        if (config.getBoolean("show-available")) {
+            ListAvailableMetrics availableMetrics = new ListAvailableMetrics(
+                    "AvailableMetrics",
+                    config.getString("namespace"),
+                    config.getString("cluster-name")
+            );
+
+            availableMetrics.run();
+        }
     }
 
     public void run() {
         List<MetricDataQuery> dq = new ArrayList<>();
+        List<Dimension> dims = new ArrayList<>();
 
         /* Retrieve CPU utilization for given timerange */
         try {
-            List<Dimension> dims = new ArrayList<>();
-
             dims.add(Dimension.builder()
                     .name("ClusterName")
                     .value(this.clusterName)
