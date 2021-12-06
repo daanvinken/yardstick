@@ -102,8 +102,7 @@ public abstract class Experiment implements Runnable {
                 stats.stop();
             }
         }
-        System.out.println("Goodbye.");
-        System.exit(0);
+        this.logger.info("Ending experiment thread...");
     }
 
     /**

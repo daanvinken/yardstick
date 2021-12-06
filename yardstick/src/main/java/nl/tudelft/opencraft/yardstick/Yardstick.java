@@ -24,7 +24,6 @@ import com.beust.jcommander.JCommander;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
@@ -44,7 +43,7 @@ import nl.tudelft.opencraft.yardstick.game.GameArchitecture;
 import nl.tudelft.opencraft.yardstick.game.GameFactory;
 import nl.tudelft.opencraft.yardstick.logging.GlobalLogger;
 import nl.tudelft.opencraft.yardstick.logging.SimpleTimeFormatter;
-import nl.tudelft.opencraft.yardstick.metrics.cloud.aws.AwsCpuUtilization;
+import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsManager;
 import nl.tudelft.opencraft.yardstick.workload.CsvConverter;
 import nl.tudelft.opencraft.yardstick.workload.WorkloadDumper;
 
@@ -56,7 +55,7 @@ public class Yardstick {
     public static final GlobalLogger LOGGER = GlobalLogger.setupGlobalLogger("Yardstick");
     public static final ScheduledExecutorService THREAD_POOL = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException{
         // Logger
         LOGGER.setupConsoleLogging(new SimpleTimeFormatter());
 
@@ -139,23 +138,20 @@ public class Yardstick {
 //        t.setName("experiment-" + behaviorName);
 //
 //        t.start();
+//
+//
+        //TODO join does not work on this thread because it spawns "child threads" ?
+//        t.join();
 
-        //TODO join thread above
         if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
             Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
-            String platform = cloudMetricsConfig.getString("platform");
-            //TODO move settings to config and timing from either config file or actual run
-            if (platform.equals("aws")) {
-                LOGGER.info("Metrics on platform '" + platform + "' enabled.");
-                AwsCpuUtilization x = new AwsCpuUtilization("AWS_test",
-                        LocalDateTime.now().minusHours(2),
-                        LocalDateTime.now(),
-                        "AWS/ECS"
-                );
-            }
-            else {
-                throw new IllegalArgumentException(MessageFormat.format("Metrics for platform ''{0}'' does not exist", platform));
-            }
+            // TODO dynamic start & end-time also account for odd timezones
+            LocalDateTime startTime = LocalDateTime.now().minusHours(6);
+            LocalDateTime endTime = LocalDateTime.now();
+            CloudMetricsManager metricsManager = new CloudMetricsManager(cloudMetricsConfig,
+                                                                        startTime,
+                                                                        endTime
+            );
         }
     }
 
