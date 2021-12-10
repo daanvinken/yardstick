@@ -152,6 +152,7 @@ public class Yardstick {
                                                                         startTime,
                                                                         endTime
             );
+            metricsManager.start();
         }
     }
 

@@ -1,0 +1,52 @@
+Manifest-Version: 1.0
+Main-Class: nl.tudelft.opencraft.yardstick.Yardstick
+Class-Path: aws-query-protocol-2.17.51.jar simpleclient_pushgateway-0.0.
+ 19.jar netty-handler-4.1.68.Final.jar aws-core-2.17.51.jar jackson-modu
+ le-jaxb-annotations-2.12.5.jar azure-core-1.22.0.jar jetty-server-9.4.1
+ 9.v20190610.jar netty-codec-http-4.1.68.Final.jar lambda-2.17.51.jar re
+ actor-core-3.4.10.jar json-utils-2.17.51.jar jna-platform-5.6.0.jar jac
+ kson-core-2.10.0.pr1.jar msal4j-persistence-extension-1.1.0.jar j2objc-
+ annotations-1.3.jar packetlib-1.2.1-20201116.160416-1.jar jsr305-3.0.2.
+ jar jetty-servlet-9.4.19.v20190610.jar jetty-io-9.4.19.v20190610.jar ne
+ tty-resolver-dns-native-macos-4.1.68.Final-osx-x86_64.jar reactive-stre
+ ams-1.0.3.jar third-party-jackson-core-2.17.51.jar jackson-dataformat-x
+ ml-2.12.5.jar jackson-datatype-jsr310-2.12.5.jar msal4j-1.11.0.jar webs
+ ocket-api-9.4.19.v20190610.jar woodstox-core-6.2.4.jar kotlin-stdlib-co
+ mmon-1.3.31.jar reactor-netty-core-1.0.11.jar jetty-client-9.4.19.v2019
+ 0610.jar cloudwatch-2.17.51.jar netty-codec-dns-4.1.68.Final.jar guava-
+ 31.0.1-jre.jar annotations-13.0.jar checker-qual-3.12.0.jar jackson-dat
+ abind-2.10.0.pr1.jar mcauthlib-1.0.jar slf4j-simple-1.7.26.jar utils-2.
+ 17.51.jar websocket-common-9.4.19.v20190610.jar httpclient-4.5.13.jar a
+ ws-json-protocol-2.17.51.jar netty-common-4.1.68.Final.jar nimbus-jose-
+ jwt-9.9.3.jar regions-2.17.51.jar opennbt-1.0.jar websocket-client-9.4.
+ 19.v20190610.jar jetty-webapp-9.4.19.v20190610.jar netty-transport-nati
+ ve-epoll-4.1.68.Final-linux-x86_64.jar stax2-api-4.2.1.jar jetty-util-9
+ .4.19.v20190610.jar jcommander-1.58.jar netty-transport-4.1.68.Final.ja
+ r netty-resolver-4.1.68.Final.jar error_prone_annotations-2.7.1.jar jet
+ ty-xml-9.4.19.v20190610.jar jakarta.activation-api-1.2.1.jar azure-core
+ -management-1.4.3.jar azure-resourcemanager-resources-2.10.0.jar reacto
+ r-netty-http-1.0.11.jar cloudwatchevents-2.17.96.jar jetty-security-9.4
+ .19.v20190610.jar mcprotocollib-1.12.2-3-20201116.161427-2.jar netty-co
+ dec-http2-4.1.68.Final.jar commons-logging-1.2.jar netty-transport-nati
+ ve-unix-common-4.1.68.Final.jar jetty-http-9.4.19.v20190610.jar metrics
+ -spi-2.17.51.jar annotations-2.17.51.jar netty-codec-socks-4.1.68.Final
+ .jar profiles-2.17.51.jar asm-9.1.jar apache-client-2.17.51.jar sdk-cor
+ e-2.17.51.jar http-client-spi-2.17.51.jar jackson-annotations-2.10.0.pr
+ 1.jar oauth2-oidc-sdk-9.7.jar websocket-server-9.4.19.v20190610.jar jav
+ ax.servlet-api-3.1.0.jar netty-buffer-4.1.68.Final.jar azure-identity-1
+ .4.2.jar netty-tcnative-boringssl-static-2.0.43.Final.jar gson-2.8.8.ja
+ r json-smart-2.4.7.jar accessors-smart-2.4.7.jar netty-all-4.1.20.Final
+ .jar kotlin-stdlib-jdk8-1.3.31.jar listenablefuture-9999.0-empty-to-avo
+ id-conflict-with-guava.jar simpleclient_common-0.0.19.jar content-type-
+ 2.1.jar websocket-servlet-9.4.19.v20190610.jar slf4j-api-1.7.26.jar fai
+ lsafe-2.4.4.jar protocol-core-2.17.51.jar netty-reactive-streams-2.0.5.
+ jar kotlin-stdlib-jdk7-1.3.31.jar netty-reactive-streams-http-2.0.5.jar
+  eventstream-1.0.1.jar lang-tag-1.5.jar commons-collections4-4.1.jar az
+ ure-core-http-netty-1.11.2.jar commons-codec-1.11.jar javalin-3.4.1.jar
+  netty-resolver-dns-4.1.68.Final.jar simpleclient-0.0.19.jar netty-nio-
+ client-2.17.51.jar kotlin-stdlib-1.3.31.jar netty-transport-native-kque
+ ue-4.1.68.Final-osx-x86_64.jar netty-handler-proxy-4.1.68.Final.jar jak
+ arta.xml.bind-api-2.3.2.jar failureaccess-1.0.1.jar httpcore-4.4.11.jar
+  jna-5.5.0.jar auth-2.17.51.jar jcip-annotations-1.0-1.jar netty-codec-
+ 4.1.68.Final.jar config-1.4.1.jar
+

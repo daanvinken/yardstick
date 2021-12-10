@@ -48,15 +48,15 @@ public class AwsMetricsClient extends CloudMetricsClient {
                     "AvailableMetrics",
                     config.getString("namespace"),
                     config.getString("cluster-name")
-        );
-        availableMetrics.run();
+            );
+            availableMetrics.run();
+        }
 
         this.logger.info(String.format("Retrieving AWS metric '%s' for %s to %s with period '%ds'",
                 this.metricType,
                 this.startTime.toString(),
                 this.endTime.toString(),
                 this.period));
-        }
     }
 
     public void run() {
@@ -117,7 +117,9 @@ public class AwsMetricsClient extends CloudMetricsClient {
             for (MetricDataResult item : data) {
                 this.logger.info("Status " + item.statusCode().toString());
                 if (item.hasValues() && item.hasTimestamps()) {
-                    // TODO save values
+                    // TODO is there a situation where we retreive multiple values?
+                    this.values = item.values();
+                    this.timestamps = item.timestamps();
                     this.logger.info(item.values().toString());
                     this.logger.info(item.timestamps().toString());
                 } else {
@@ -127,7 +129,8 @@ public class AwsMetricsClient extends CloudMetricsClient {
             }
 
         } catch (CloudWatchException e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
+            this.logger.warning(e.awsErrorDetails().errorMessage());
+            this.logger.warning("Exiting...");
             System.exit(1);
         }
 
