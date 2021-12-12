@@ -106,17 +106,11 @@
             <version>3.4.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.10.0.pr1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-core-serializer-json-jackson</artifactId>
-            <version>1.2.9</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--            <artifactId>jackson-databind</artifactId>-->
+<!--            <version>2.10.0.pr1</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -174,6 +168,12 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>lambda</artifactId>
             <version>${aws.sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/cloudwatch -->
@@ -181,6 +181,12 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>cloudwatch</artifactId>
             <version>${aws.sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/cloudwatchevents -->
@@ -188,7 +194,14 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>cloudwatchevents</artifactId>
             <version>2.17.96</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/netty-nio-client -->
         <dependency>
@@ -196,12 +209,25 @@
             <artifactId>netty-nio-client</artifactId>
             <version>${aws.sdk.version}</version>
         </dependency>
-
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.9</version>
+            <version>2.8.8</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.microsoft.azure/azure-core -->
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-core</artifactId>
+            <version>0.9.8</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.azure/azure-core-management -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-management</artifactId>
+            <version>1.4.4</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.azure/azure-identity -->
@@ -211,55 +237,24 @@
             <version>1.4.2</version>
         </dependency>
 
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.azure/azure-security-keyvault-secrets &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.azure</groupId>-->
-<!--            <artifactId>azure-security-keyvault-secrets</artifactId>-->
-<!--            <version>4.3.5</version>-->
-<!--        </dependency>-->
-
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-core-management</artifactId>
-            <version>1.4.3</version>
-        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.azure.resourcemanager/azure-resourcemanager-resources -->
         <dependency>
             <groupId>com.azure.resourcemanager</groupId>
             <artifactId>azure-resourcemanager</artifactId>
             <version>2.10.0</version>
         </dependency>
+
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.12.2</version>
-            <!--  {x-version-update;com.fasterxml.jackson.core:jackson-annotations;external_dependency}  -->
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.12.2</version>
-            <!--  {x-version-update;com.fasterxml.jackson.core:jackson-core;external_dependency}  -->
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.12.2</version>
-            <!--  {x-version-update;com.fasterxml.jackson.core:jackson-databind;external_dependency}  -->
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.12.2</version>
-            <!--  {x-version-update;com.fasterxml.jackson.datatype:jackson-datatype-jsr310;external_dependency}  -->
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.12.2</version>
-            <!--  {x-version-update;com.fasterxml.jackson.dataformat:jackson-dataformat-xml;external_dependency}  -->
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.42.Final</version>
+        </dependency>
 
     </dependencies>
 
@@ -280,6 +275,17 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <minimizeJar>false</minimizeJar>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <transformers>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -291,17 +297,6 @@
                             <createDependencyReducedPom>
                                 false
                             </createDependencyReducedPom>
-                            <!-- Avoiding unsigned jar issues -->
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
                         </configuration>
                     </execution>
                 </executions>

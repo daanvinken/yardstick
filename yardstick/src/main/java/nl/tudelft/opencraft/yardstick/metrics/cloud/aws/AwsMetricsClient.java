@@ -26,28 +26,32 @@ public class AwsMetricsClient extends CloudMetricsClient {
     private final String clusterName;
     private final int period;
     private final String statisticType;
+    private final Config metricConfig;
 
 
     public AwsMetricsClient(@NotNull Config config, LocalDateTime startTime, LocalDateTime endTime) {
-        super(config.getString("metric-name"), config.getString("namespace"));
+        // TODO fix this long config string
+        super(config.getString("yardstick.player-emulation.arguments.cloud-metrics.metric-name"),
+                config.getString("yardstick.player-emulation.arguments.cloud-metrics.namespace"));
+        this.metricConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
         this.startTime = startTime;
         this.endTime = endTime;
-        this.metricType = config.getString("metric-type");
-        this.namespace = config.getString("namespace");
-        this.clusterName = config.getString("cluster-name");
-        this.period = Integer.parseInt(config.getString("period"));
-        this.statisticType = config.getString("statistic");
+        this.metricType = metricConfig.getString("metric-type");
+        this.namespace = metricConfig.getString("namespace");
+        this.clusterName = metricConfig.getString("cluster-name");
+        this.period = Integer.parseInt(metricConfig.getString("period"));
+        this.statisticType = metricConfig.getString("statistic");
 
         if (this.period < 60) {
             this.logger.warning("Please note you need to have high-precision metrics enabled " +
                     "in order to use a period below 60. This can result in additional charges.");
         }
 
-        if (config.getBoolean("show-available")) {
+        if (metricConfig.getBoolean("show-available")) {
             ListAvailableMetrics availableMetrics = new ListAvailableMetrics(
                     "AvailableMetrics",
-                    config.getString("namespace"),
-                    config.getString("cluster-name")
+                    metricConfig.getString("namespace"),
+                    metricConfig.getString("cluster-name")
             );
             availableMetrics.run();
         }

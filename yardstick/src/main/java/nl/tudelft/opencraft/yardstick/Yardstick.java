@@ -144,11 +144,11 @@ public class Yardstick {
 //        t.join();
 
         if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
-            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
+//            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
             // TODO dynamic start & end-time also account for odd timezones
             LocalDateTime startTime = LocalDateTime.now().minusHours(6);
             LocalDateTime endTime = LocalDateTime.now();
-            CloudMetricsManager metricsManager = new CloudMetricsManager(cloudMetricsConfig,
+            CloudMetricsManager metricsManager = new CloudMetricsManager(config,
                                                                         startTime,
                                                                         endTime
             );

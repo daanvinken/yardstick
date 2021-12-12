@@ -20,7 +20,7 @@ public class CloudMetricsManager {
     this.config = config;
     this.startTime = startTime;
     this.endTime = endTime;
-    this.platform = config.getString("platform");
+    this.platform = config.getString("yardstick.player-emulation.arguments.cloud-metrics.platform");
 
     }
 
