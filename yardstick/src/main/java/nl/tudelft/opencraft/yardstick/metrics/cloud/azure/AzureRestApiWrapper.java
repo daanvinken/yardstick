@@ -4,9 +4,13 @@ import nl.tudelft.opencraft.yardstick.logging.GlobalLogger;
 import nl.tudelft.opencraft.yardstick.logging.SubLogger;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -27,10 +31,8 @@ public final class AzureRestApiWrapper {
     private final String clientId;
     private final String clientSecret;
     private String bearer_token;
-    private HttpPost request;
-    private CloseableHttpResponse response;
     private final String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
-    private final String metricUrl = "https://management.azure.com/{{resourceUri}}/providers/Microsoft.Insights/metrics?";
+    private final String metricUrl = "https://management.azure.com/%s/providers/Microsoft.Insights/metrics";
 
     public AzureRestApiWrapper(String tenantId, String clientId, String clientSecret) {
         this.httpClient = HttpClients.createDefault();
@@ -39,45 +41,23 @@ public final class AzureRestApiWrapper {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authenticate();
-        this.logger.info("Succesfully authenticated with Azure REST API.");
     }
 
     public void authenticate() {
-        this.createAuthRequest();
+        HttpPost request = this.createAuthRequest();
+        JSONObject response = this.getResponse(request);
         try {
-            this.response = httpClient.execute(this.request);
-            HttpEntity entity = response.getEntity();
-            int responseCode = response.getStatusLine().getStatusCode();
-            String responseMsg = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-
-            if(responseCode != 200) {
-                this.logger.severe(String.format("Could not retrieve bearer token.\n" +
-                                "Statuscode: %s\n" +
-                                "Response: %s ",
-                                responseCode,
-                                responseMsg));
-            }
-            else {
-                JSONObject jsonRespone = new JSONObject(responseMsg);
-                this.bearer_token = jsonRespone.getString("access_token");
-            }
-        } catch (IOException | JSONException ex) {
-            this.logger.severe(ex.toString());
-        } finally {
-            try {
-                if (this.response != null) {
-                    response.close();
-                }
-            } catch (IOException e) {
-                this.logger.warning("Could not close request.");
-            }
+            this.bearer_token = response.getString("access_token");
+        } catch (JSONException ex) {
+            throw new ParseException("Unable to parse bearer token from auth response.");
         }
+        this.logger.info("Successfully authenticated for Azure REST API.");
     }
 
-    private void createAuthRequest() {
+    private HttpPost createAuthRequest() {
         String reqUrl = String.format(this.authUrl, tenantId);
+        HttpPost request = new HttpPost(reqUrl);
         try {
-            this.request = new HttpPost(reqUrl);
             request.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
             List<NameValuePair> params = new ArrayList<>();
@@ -86,26 +66,27 @@ public final class AzureRestApiWrapper {
             params.add(new BasicNameValuePair("client_secret", clientSecret));
             params.add(new BasicNameValuePair("resource", "https://management.azure.com/"));
 
-            this.request.setEntity(new UrlEncodedFormEntity(params));
+            request.setEntity(new UrlEncodedFormEntity(params));
         } catch (UnsupportedEncodingException ex) {
             this.logger.severe(ex.toString());
         }
+        return request;
     }
 
-    private void createMetricRequest(String resourceId,
+    public void getMetrics(HttpGet request) {
+        JSONObject response = this.getResponse(request);
+        System.out.println(response);
+    }
+
+    public HttpGet createMetricRequest(String resourceId,
                             String aggregation,
                             String apiVersion,
                             String timeSpan,
-                            String metricName,
+                            String metricType,
                             String namespace
                             ) {
-        String reqUrl = String.format(this.metricUrl, resourceId);
-        this.request = new HttpPost(reqUrl);
-        request.addHeader("Content-Type", "application/x-www-form-urlencoded");
-        request.addHeader("Authorization", "Bearer " + this.bearer_token);
-
         List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicNameValuePair("metricnames", metricName));
+        params.add(new BasicNameValuePair("metricnames", metricType));
         params.add(new BasicNameValuePair("aggregation", aggregation));
         params.add(new BasicNameValuePair("api-version", apiVersion));
         params.add(new BasicNameValuePair("metricnamespace", namespace));
@@ -113,12 +94,44 @@ public final class AzureRestApiWrapper {
         // TDDO region is currently hardcoded application wide (aws/azure)
         params.add(new BasicNameValuePair("region", "westeurope"));
         params.add(new BasicNameValuePair("resultType", "TimeSeriesElement"));
+
+        String reqUrl = String.format(this.metricUrl, resourceId);
+        HttpGet request = new HttpGet(reqUrl+"?"+ URLEncodedUtils.format(params, "utf-8"));
+        request.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        request.addHeader("Authorization", "Bearer " + this.bearer_token);
+
+    return request;
+    }
+
+    public JSONObject getResponse(HttpRequestBase request) {
+        int responseCode = 0;
+        String responseMsg = "";
+        JSONObject jsonResponse = new JSONObject();
         try {
-            this.request.setEntity(new UrlEncodedFormEntity(params));
-        } catch (UnsupportedEncodingException ex) {
-            this.logger.severe(ex.toString());
+            CloseableHttpResponse response = this.httpClient.execute(request);
+            HttpEntity entity = response.getEntity();
+            responseCode = response.getStatusLine().getStatusCode();
+            responseMsg = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            this.logger.severe(ex.getMessage());
         }
 
+        if (responseCode != 200) {
+            this.logger.severe(String.format("Errror performing request to '%s':\n" +
+                            "Statuscode: \n%s\n" +
+                            "Response: \n%s\n",
+                    request.getURI(),
+                    responseCode,
+                    responseMsg));
+        } else {
+            try {
+                jsonResponse = new JSONObject(responseMsg);
+            } catch (JSONException ex) {
+                this.logger.severe("Unable to parse JSON.");
+                this.logger.severe(ex.getMessage());
+            }
+        }
+        return jsonResponse;
     }
 
 
