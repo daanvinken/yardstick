@@ -28,10 +28,12 @@ import nl.tudelft.opencraft.yardstick.game.GameArchitecture;
 import nl.tudelft.opencraft.yardstick.game.GameFactory;
 import nl.tudelft.opencraft.yardstick.logging.GlobalLogger;
 import nl.tudelft.opencraft.yardstick.logging.SimpleTimeFormatter;
+import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsManager;
 import nl.tudelft.opencraft.yardstick.workload.CsvConverter;
 import nl.tudelft.opencraft.yardstick.workload.WorkloadDumper;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -122,26 +124,26 @@ public class Yardstick {
             ex.setWorkloadDumper(new WorkloadDumper());
         }
 
-        Thread t = new Thread(ex);
-        t.setName("experiment-" + behaviorName);
+//        Thread t = new Thread(ex);
+//        t.setName("experiment-" + behaviorName);
+//
+//        t.start();
+//
+//
+//        //TODO join does not work on this thread because it spawns "child threads" ?
+//        t.join();
 
-        t.start();
-
-
-        //TODO join does not work on this thread because it spawns "child threads" ?
-        t.join();
-
-//        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
-////            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
-//            // TODO dynamic start & end-time also account for odd timezones
-//            LocalDateTime startTime = LocalDateTime.now().minusHours(6);
-//            LocalDateTime endTime = LocalDateTime.now();
-//            CloudMetricsManager metricsManager = new CloudMetricsManager(config,
-//                                                                        startTime,
-//                                                                        endTime
-//            );
-//            metricsManager.start();
-//        }
+        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
+            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
+            // TODO dynamic start & end-time also account for odd timezones
+            LocalDateTime startTime = LocalDateTime.now().minusHours(6);
+            LocalDateTime endTime = LocalDateTime.now();
+            CloudMetricsManager metricsManager = new CloudMetricsManager(cloudMetricsConfig,
+                                                                        startTime,
+                                                                        endTime
+            );
+            metricsManager.start();
+        }
     }
 
 }

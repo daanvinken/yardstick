@@ -29,6 +29,8 @@ public final class AzureRestApiWrapper {
     private String bearer_token;
     private HttpPost request;
     private CloseableHttpResponse response;
+    private final String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
+    private final String metricUrl = "https://management.azure.com/{{resourceUri}}/providers/Microsoft.Insights/metrics?";
 
     public AzureRestApiWrapper(String tenantId, String clientId, String clientSecret) {
         this.httpClient = HttpClients.createDefault();
@@ -73,13 +75,12 @@ public final class AzureRestApiWrapper {
     }
 
     private void createAuthRequest() {
-        String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
-        String reqUrl = String.format(authUrl, tenantId);
+        String reqUrl = String.format(this.authUrl, tenantId);
         try {
             this.request = new HttpPost(reqUrl);
             request.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("grant_type", "client_credentials"));
             params.add(new BasicNameValuePair("client_id", clientId));
             params.add(new BasicNameValuePair("client_secret", clientSecret));
@@ -90,4 +91,35 @@ public final class AzureRestApiWrapper {
             this.logger.severe(ex.toString());
         }
     }
+
+    private void createMetricRequest(String resourceId,
+                            String aggregation,
+                            String apiVersion,
+                            String timeSpan,
+                            String metricName,
+                            String namespace
+                            ) {
+        String reqUrl = String.format(this.metricUrl, resourceId);
+        this.request = new HttpPost(reqUrl);
+        request.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        request.addHeader("Authorization", "Bearer " + this.bearer_token);
+
+        List<NameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("metricnames", metricName));
+        params.add(new BasicNameValuePair("aggregation", aggregation));
+        params.add(new BasicNameValuePair("api-version", apiVersion));
+        params.add(new BasicNameValuePair("metricnamespace", namespace));
+        params.add(new BasicNameValuePair("timespan", timeSpan));
+        // TDDO region is currently hardcoded application wide (aws/azure)
+        params.add(new BasicNameValuePair("region", "westeurope"));
+        params.add(new BasicNameValuePair("resultType", "TimeSeriesElement"));
+        try {
+            this.request.setEntity(new UrlEncodedFormEntity(params));
+        } catch (UnsupportedEncodingException ex) {
+            this.logger.severe(ex.toString());
+        }
+
+    }
+
+
 }
