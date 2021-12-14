@@ -15,8 +15,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -54,6 +56,7 @@ public final class AzureRestApiWrapper {
         this.logger.info("Successfully authenticated for Azure REST API.");
     }
 
+    @NotNull
     private HttpPost createAuthRequest() {
         String reqUrl = String.format(this.authUrl, tenantId);
         HttpPost request = new HttpPost(reqUrl);
@@ -73,14 +76,40 @@ public final class AzureRestApiWrapper {
         return request;
     }
 
-    public void getMetrics(HttpGet request) {
+    public JSONArray getMetrics(HttpGet request){
         JSONObject response = this.getResponse(request);
-        System.out.println(response);
+        JSONArray metrics = null;
+        try {
+            metrics = this.parseMetricJson(response);
+        } catch (JSONException ex) {
+            throw new ParseException("Could not parse data from metric response. " +
+                    "Possibly no metrics available for given paramters. " +
+                    "The server did not return an error.");
+        }
+        return metrics;
     }
 
+    private JSONArray parseMetricJson(JSONObject metrics) throws JSONException {
+        JSONArray out = metrics
+                .getJSONArray("value")
+                .getJSONObject(0)
+                .getJSONArray("timeseries")
+                .getJSONObject(0)
+                .getJSONArray("data");
+        // out is now an array of {
+        //                            "timeStamp": "2021-12-11T13:54:00Z",
+        //                            "average": 72689664.0
+        //                        },
+        // Create some kind of mericResult class to store the values in. Stream is not possible on jsonarray nor
+        // directly convertable to collection type
+        return out;
+    }
+
+    @NotNull
     public HttpGet createMetricRequest(String resourceId,
                             String aggregation,
                             String apiVersion,
+                            String region,
                             String timeSpan,
                             String metricType,
                             String namespace
@@ -91,8 +120,7 @@ public final class AzureRestApiWrapper {
         params.add(new BasicNameValuePair("api-version", apiVersion));
         params.add(new BasicNameValuePair("metricnamespace", namespace));
         params.add(new BasicNameValuePair("timespan", timeSpan));
-        // TDDO region is currently hardcoded application wide (aws/azure)
-        params.add(new BasicNameValuePair("region", "westeurope"));
+        params.add(new BasicNameValuePair("region", region));
         params.add(new BasicNameValuePair("resultType", "TimeSeriesElement"));
 
         String reqUrl = String.format(this.metricUrl, resourceId);
@@ -116,20 +144,21 @@ public final class AzureRestApiWrapper {
             this.logger.severe(ex.getMessage());
         }
 
-        if (responseCode != 200) {
-            this.logger.severe(String.format("Errror performing request to '%s':\n" +
+        try {
+            jsonResponse = new JSONObject(responseMsg);
+        } catch (JSONException ex) {
+            this.logger.severe("Unable to parse JSON.");
+            this.logger.severe(ex.getMessage());
+        }
+
+        if (responseCode != 200 || jsonResponse.has("error")) {
+            this.logger.severe(String.format("Error with request:\n" +
+                            "Url: \n'%s'\n" +
                             "Statuscode: \n%s\n" +
                             "Response: \n%s\n",
                     request.getURI(),
                     responseCode,
                     responseMsg));
-        } else {
-            try {
-                jsonResponse = new JSONObject(responseMsg);
-            } catch (JSONException ex) {
-                this.logger.severe("Unable to parse JSON.");
-                this.logger.severe(ex.getMessage());
-            }
         }
         return jsonResponse;
     }
