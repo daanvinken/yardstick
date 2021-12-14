@@ -82,13 +82,6 @@ public class AwsMetricsClient extends CloudMetricsClient {
         metric to create the statistic that you requested.
         CloudWatch does not aggregate across dimensions for your custom metrics.
         */
-//            dims.add(Dimension.builder()
-//                    .name("TaskDefinitionFamily")
-//                    .value("opencraft-servo-player-task")
-//                    .build()
-//            );
-
-
             Metric met = Metric.builder()
                     .metricName(this.metricType)
                     .namespace(this.namespace)
@@ -121,7 +114,6 @@ public class AwsMetricsClient extends CloudMetricsClient {
             for (MetricDataResult item : data) {
                 this.logger.info("Status " + item.statusCode().toString());
                 if (item.hasValues() && item.hasTimestamps()) {
-                    // TODO is there a situation where we retreive multiple values?
                     this.values = item.values();
                     this.timestamps = item.timestamps();
                     this.logger.info(item.values().toString());

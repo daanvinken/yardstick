@@ -40,10 +40,10 @@ public class AzureMetricsClient extends CloudMetricsClient {
         String clientId =  config.getString("yardstick.game.servo.environment.AZURE_CLIENT_ID");
         String clientSecret =  config.getString("yardstick.game.servo.environment.AZURE_CLIENT_SECRET");
 
-        this.azureRestClient = new AzureRestApiWrapper();
-        this.azureRestClient.authenticate(tenantId,
-                clientId,
-                clientSecret);
+        this.azureRestClient = new AzureRestApiWrapper(tenantId,
+                                                        clientId,
+                                                        clientSecret);
+
     }
 
     public void run() {

@@ -23,29 +23,17 @@ package nl.tudelft.opencraft.yardstick;
 import com.beust.jcommander.JCommander;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment10GenerationStressTest;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment11Latency;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment12LatencyAndWalkAround;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment3WalkAround;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment4MultiWalkAround;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment5SimpleWalk;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment6InteractWalk;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment8BoxWalkAround;
-import nl.tudelft.opencraft.yardstick.experiment.Experiment9Spike;
-import nl.tudelft.opencraft.yardstick.experiment.RemoteControlledExperiment;
+import nl.tudelft.opencraft.yardstick.experiment.*;
 import nl.tudelft.opencraft.yardstick.game.GameArchitecture;
 import nl.tudelft.opencraft.yardstick.game.GameFactory;
 import nl.tudelft.opencraft.yardstick.logging.GlobalLogger;
 import nl.tudelft.opencraft.yardstick.logging.SimpleTimeFormatter;
-import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsManager;
 import nl.tudelft.opencraft.yardstick.workload.CsvConverter;
 import nl.tudelft.opencraft.yardstick.workload.WorkloadDumper;
+
+import java.time.Duration;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Entry point for the emulator.
@@ -134,26 +122,26 @@ public class Yardstick {
             ex.setWorkloadDumper(new WorkloadDumper());
         }
 
-//        Thread t = new Thread(ex);
-//        t.setName("experiment-" + behaviorName);
-//
-//        t.start();
-//
-//
-        //TODO join does not work on this thread because it spawns "child threads" ?
-//        t.join();
+        Thread t = new Thread(ex);
+        t.setName("experiment-" + behaviorName);
 
-        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
-//            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
-            // TODO dynamic start & end-time also account for odd timezones
-            LocalDateTime startTime = LocalDateTime.now().minusHours(6);
-            LocalDateTime endTime = LocalDateTime.now();
-            CloudMetricsManager metricsManager = new CloudMetricsManager(config,
-                                                                        startTime,
-                                                                        endTime
-            );
-            metricsManager.start();
-        }
+        t.start();
+
+
+        //TODO join does not work on this thread because it spawns "child threads" ?
+        t.join();
+
+//        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
+////            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
+//            // TODO dynamic start & end-time also account for odd timezones
+//            LocalDateTime startTime = LocalDateTime.now().minusHours(6);
+//            LocalDateTime endTime = LocalDateTime.now();
+//            CloudMetricsManager metricsManager = new CloudMetricsManager(config,
+//                                                                        startTime,
+//                                                                        endTime
+//            );
+//            metricsManager.start();
+//        }
     }
 
 }

@@ -23,34 +23,25 @@ import java.util.List;
 public final class AzureRestApiWrapper {
     private final SubLogger logger;
     private final CloseableHttpClient httpClient;
-    private String bearer_token = "";
+    private final String tenantId;
+    private final String clientId;
+    private final String clientSecret;
+    private String bearer_token;
     private HttpPost request;
     private CloseableHttpResponse response;
 
-    public AzureRestApiWrapper() {
+    public AzureRestApiWrapper(String tenantId, String clientId, String clientSecret) {
         this.httpClient = HttpClients.createDefault();
         this.logger = GlobalLogger.getLogger().newSubLogger("AzureApiWrapper");
+        this.tenantId = tenantId;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.authenticate();
+        this.logger.info("Succesfully authenticated with Azure REST API.");
     }
 
-    public void authenticate(String tenantId, String clientId, String clientSecret) {
-        String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
-        String reqUrl = String.format(authUrl, tenantId);
-        try {
-            this.request = new HttpPost(reqUrl);
-            request.addHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("grant_type", "client_credentials"));
-            params.add(new BasicNameValuePair("client_id", clientId));
-            params.add(new BasicNameValuePair("client_secret", clientSecret));
-            params.add(new BasicNameValuePair("resource", "https://management.azure.com/"));
-
-            this.request.setEntity(new UrlEncodedFormEntity(params));
-            this.logger.info("Requesting bearer token for authentication with Azure Rest API");
-        } catch (UnsupportedEncodingException ex) {
-            this.logger.severe(ex.toString());
-        }
-
+    public void authenticate() {
+        this.createAuthRequest();
         try {
             this.response = httpClient.execute(this.request);
             HttpEntity entity = response.getEntity();
@@ -61,10 +52,8 @@ public final class AzureRestApiWrapper {
                 this.logger.severe(String.format("Could not retrieve bearer token.\n" +
                                 "Statuscode: %s\n" +
                                 "Response: %s ",
-                        responseCode,
-                        responseMsg));
-                this.logger.severe("Exiting");
-                System.exit(1);
+                                responseCode,
+                                responseMsg));
             }
             else {
                 JSONObject jsonRespone = new JSONObject(responseMsg);
@@ -80,6 +69,25 @@ public final class AzureRestApiWrapper {
             } catch (IOException e) {
                 this.logger.warning("Could not close request.");
             }
+        }
+    }
+
+    private void createAuthRequest() {
+        String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
+        String reqUrl = String.format(authUrl, tenantId);
+        try {
+            this.request = new HttpPost(reqUrl);
+            request.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new BasicNameValuePair("grant_type", "client_credentials"));
+            params.add(new BasicNameValuePair("client_id", clientId));
+            params.add(new BasicNameValuePair("client_secret", clientSecret));
+            params.add(new BasicNameValuePair("resource", "https://management.azure.com/"));
+
+            this.request.setEntity(new UrlEncodedFormEntity(params));
+        } catch (UnsupportedEncodingException ex) {
+            this.logger.severe(ex.toString());
         }
     }
 }
