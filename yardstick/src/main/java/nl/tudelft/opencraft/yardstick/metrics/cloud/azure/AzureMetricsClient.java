@@ -1,13 +1,5 @@
 package nl.tudelft.opencraft.yardstick.metrics.cloud.azure;
 
-
-import com.azure.core.credential.TokenCredential;
-import com.azure.core.http.policy.HttpLogDetailLevel;
-import com.azure.core.management.AzureEnvironment;
-import com.azure.core.management.profile.AzureProfile;
-import com.azure.identity.AzureAuthorityHosts;
-import com.azure.identity.EnvironmentCredentialBuilder;
-import com.azure.resourcemanager.AzureResourceManager;
 import com.typesafe.config.Config;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsClient;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +15,7 @@ public class AzureMetricsClient extends CloudMetricsClient {
     private final int period;
     private final String statisticType;
     private final Config metricConfig;
+    private final AzureRestApiWrapper azureRestClient;
 
 
     public AzureMetricsClient(@NotNull Config config, LocalDateTime startTime, LocalDateTime endTime) {
@@ -43,24 +36,17 @@ public class AzureMetricsClient extends CloudMetricsClient {
                 this.startTime.toString(),
                 this.endTime.toString(),
                 this.period));
-        this.createDefaultAzureCredential(config);
+        String tenantId =  config.getString("yardstick.game.servo.environment.AZURE_TENANT_ID");
+        String clientId =  config.getString("yardstick.game.servo.environment.AZURE_CLIENT_ID");
+        String clientSecret =  config.getString("yardstick.game.servo.environment.AZURE_CLIENT_SECRET");
+
+        this.azureRestClient = new AzureRestApiWrapper();
+        this.azureRestClient.authenticate(tenantId,
+                clientId,
+                clientSecret);
     }
 
     public void run() {
-    }
-
-    public void createDefaultAzureCredential(Config config) {
-        TokenCredential credential = new EnvironmentCredentialBuilder()
-                .authorityHost(AzureAuthorityHosts.AZURE_PUBLIC_CLOUD)
-                .build();
-        String tenantId =  config.getString("yardstick.game.servo.environment.AZURE_TENANT_ID");
-        String subscriptionId =  config.getString("yardstick.game.servo.environment.AZURE_SUBSCRIPTION_ID");
-
-        AzureProfile profile = new AzureProfile(tenantId, subscriptionId, AzureEnvironment.AZURE);
-        AzureResourceManager azureResourceManager = AzureResourceManager.configure()
-                .withLogLevel(HttpLogDetailLevel.BASIC)
-                .authenticate(credential, profile)
-                .withDefaultSubscription();
     }
 }
 
