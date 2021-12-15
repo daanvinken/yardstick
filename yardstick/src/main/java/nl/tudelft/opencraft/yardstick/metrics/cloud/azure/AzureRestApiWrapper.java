@@ -19,6 +19,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 
+import javax.naming.AuthenticationException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -32,8 +33,8 @@ public final class AzureRestApiWrapper {
     private final String clientId;
     private final String clientSecret;
     private String bearer_token;
-    private final String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
-    private final String metricUrl = "https://management.azure.com/%s/providers/Microsoft.Insights/metrics";
+    private static final String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
+    private static final String metricUrl = "https://management.azure.com/%s/providers/Microsoft.Insights/metrics";
     private String aggregation;
 
     public AzureRestApiWrapper(String tenantId, String clientId, String clientSecret) {
@@ -44,6 +45,8 @@ public final class AzureRestApiWrapper {
         this.clientSecret = clientSecret;
         this.authenticate();
     }
+
+    public boolean isAuthenticated() { return (!bearer_token.equals(""));}
 
     public AzureMetricData getMetrics(HttpGet request) {
         JSONObject response = this.getResponse(request);
@@ -97,7 +100,10 @@ public final class AzureRestApiWrapper {
                             String timeSpan,
                             String metricType,
                             String namespace
-                            ) {
+                            ) throws AuthenticationException {
+        if (this.isAuthenticated()) {
+            throw new AuthenticationException("Bearer token not set. Authenticate first.");
+        }
         this.aggregation = aggregation;
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("metricnames", metricType));

@@ -5,9 +5,9 @@ import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsClient;
 import org.apache.http.client.methods.HttpGet;
 import org.jetbrains.annotations.NotNull;
 
+import javax.naming.AuthenticationException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 
 public class AzureMetricsClient extends CloudMetricsClient {
     private final Instant startTime;
@@ -58,16 +58,22 @@ public class AzureMetricsClient extends CloudMetricsClient {
 
 
     public void run() {
-        HttpGet request = this.azureRestClient.createMetricRequest(resourceId,
-                this.statisticType,
-                this.apiVersion,
-                this.region,
-                this.getTimeSpanFormat(),
-                this.metricType,
-                this.namespace
-        );
-        LinkedHashMap<Instant, Double> metricResult = null;
-        AzureMetricData metricData = this.azureRestClient.getMetrics(request);
+        AzureMetricData metricData;
+        try {
+            HttpGet request = this.azureRestClient.createMetricRequest(resourceId,
+                    this.statisticType,
+                    this.apiVersion,
+                    this.region,
+                    this.getTimeSpanFormat(),
+                    this.metricType,
+                    this.namespace
+            );
+             metricData = this.azureRestClient.getMetrics(request);
+        } catch (AuthenticationException ex) {
+            this.logger.severe(ex.getMessage());
+            return;
+        }
+
         if (metricData.hasData()) {
             this.timestamps = metricData.getTimestamps();
             this.values = metricData.getValues();
