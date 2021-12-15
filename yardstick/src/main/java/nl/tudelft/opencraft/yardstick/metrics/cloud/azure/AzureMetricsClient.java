@@ -3,10 +3,11 @@ package nl.tudelft.opencraft.yardstick.metrics.cloud.azure;
 import com.typesafe.config.Config;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsClient;
 import org.apache.http.client.methods.HttpGet;
-import org.codehaus.jettison.json.JSONArray;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 
 public class AzureMetricsClient extends CloudMetricsClient {
     private final LocalDateTime startTime;
@@ -56,9 +57,16 @@ public class AzureMetricsClient extends CloudMetricsClient {
                 this.metricType,
                 this.namespace
         );
-        JSONArray metricResult = null;
-        metricResult = this.azureRestClient.getMetrics(request);
-        this.logger.info(metricResult.toString());
+        LinkedHashMap<Instant, Double> metricResult = null;
+        AzureMetricData metricData = this.azureRestClient.getMetrics(request);
+        if (metricData.hasData()) {
+            this.timestamps = metricData.getTimestamps();
+            this.values = metricData.getValues();
+            this.logger.info(String.format("Succesfully stored metric data with %d values.", this.values.size()));
+        }
+        else {
+            this.logger.severe("No metric data has been retrieved.");
+        }
 
     }
 }

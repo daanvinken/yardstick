@@ -15,7 +15,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +34,7 @@ public final class AzureRestApiWrapper {
     private String bearer_token;
     private final String authUrl = "https://login.microsoftonline.com/%s/oauth2/token";
     private final String metricUrl = "https://management.azure.com/%s/providers/Microsoft.Insights/metrics";
+    private String aggregation;
 
     public AzureRestApiWrapper(String tenantId, String clientId, String clientSecret) {
         this.httpClient = HttpClients.createDefault();
@@ -76,33 +76,17 @@ public final class AzureRestApiWrapper {
         return request;
     }
 
-    public JSONArray getMetrics(HttpGet request){
+    public AzureMetricData getMetrics(HttpGet request) {
         JSONObject response = this.getResponse(request);
-        JSONArray metrics = null;
+        AzureMetricData data = new AzureMetricData();
         try {
-            metrics = this.parseMetricJson(response);
+            data = new AzureMetricData(response, this.aggregation);
         } catch (JSONException ex) {
             throw new ParseException("Could not parse data from metric response. " +
                     "Possibly no metrics available for given paramters. " +
                     "The server did not return an error.");
         }
-        return metrics;
-    }
-
-    private JSONArray parseMetricJson(JSONObject metrics) throws JSONException {
-        JSONArray out = metrics
-                .getJSONArray("value")
-                .getJSONObject(0)
-                .getJSONArray("timeseries")
-                .getJSONObject(0)
-                .getJSONArray("data");
-        // out is now an array of {
-        //                            "timeStamp": "2021-12-11T13:54:00Z",
-        //                            "average": 72689664.0
-        //                        },
-        // Create some kind of mericResult class to store the values in. Stream is not possible on jsonarray nor
-        // directly convertable to collection type
-        return out;
+        return data;
     }
 
     @NotNull
@@ -114,6 +98,7 @@ public final class AzureRestApiWrapper {
                             String metricType,
                             String namespace
                             ) {
+        this.aggregation = aggregation;
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("metricnames", metricType));
         params.add(new BasicNameValuePair("aggregation", aggregation));
