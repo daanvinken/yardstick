@@ -2,25 +2,16 @@ package nl.tudelft.opencraft.yardstick.metrics.cloud.aws;
 
 import com.typesafe.config.Config;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsClient;
-
 import org.jetbrains.annotations.NotNull;
-import software.amazon.awssdk.services.cloudwatch.model.Dimension;
-import software.amazon.awssdk.services.cloudwatch.model.GetMetricDataRequest;
-import software.amazon.awssdk.services.cloudwatch.model.Metric;
-import software.amazon.awssdk.services.cloudwatch.model.MetricStat;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataQuery;
-import software.amazon.awssdk.services.cloudwatch.model.GetMetricDataResponse;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataResult;
-import software.amazon.awssdk.services.cloudwatch.model.CloudWatchException;
+import software.amazon.awssdk.services.cloudwatch.model.*;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AwsMetricsClient extends CloudMetricsClient {
-    private final LocalDateTime startTime;
-    private final LocalDateTime endTime;
+    private final Instant startTime;
+    private final Instant endTime;
     private final String metricType;
     private final String namespace;
     private final String clusterName;
@@ -28,8 +19,7 @@ public class AwsMetricsClient extends CloudMetricsClient {
     private final String statisticType;
 
 
-    public AwsMetricsClient(@NotNull Config config, LocalDateTime startTime, LocalDateTime endTime) {
-        // TODO fix this long config string
+    public AwsMetricsClient(@NotNull Config config, Instant startTime, Instant endTime) {
         super(config.getString("name"),
                 config.getString("namespace"));
         this.startTime = startTime;
@@ -101,8 +91,8 @@ public class AwsMetricsClient extends CloudMetricsClient {
             dq.add(dataQuery);
 
             GetMetricDataRequest getMetReq = GetMetricDataRequest.builder()
-                    .startTime(this.startTime.toInstant(ZoneOffset.UTC))
-                    .endTime(this.endTime.toInstant(ZoneOffset.UTC))
+                    .startTime(this.startTime)
+                    .endTime(this.endTime)
                     .metricDataQueries(dq)
                     .build();
 

@@ -6,12 +6,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 
 public class AzureMetricsClient extends CloudMetricsClient {
-    private final LocalDateTime startTime;
-    private final LocalDateTime endTime;
+    private final Instant startTime;
+    private final Instant endTime;
     private final String metricType;
     private final String namespace;
     private final String statisticType;
@@ -20,7 +20,7 @@ public class AzureMetricsClient extends CloudMetricsClient {
     private final String resourceId;
 
 
-    public AzureMetricsClient(@NotNull Config config, LocalDateTime startTime, LocalDateTime endTime) {
+    public AzureMetricsClient(@NotNull Config config, Instant startTime, Instant endTime) {
         super(config.getString("name"),
                 config.getString("namespace"));
         this.startTime = startTime;
@@ -48,12 +48,21 @@ public class AzureMetricsClient extends CloudMetricsClient {
         this.region = config.getString("region");
     }
 
+    public String getTimeSpanFormat(){
+        String out = "";
+        out += DateTimeFormatter.ISO_INSTANT.format(this.startTime);
+        out += "/";
+        out += DateTimeFormatter.ISO_INSTANT.format(this.endTime);
+        return out;
+    }
+
+
     public void run() {
         HttpGet request = this.azureRestClient.createMetricRequest(resourceId,
                 this.statisticType,
                 this.apiVersion,
                 this.region,
-                "2021-12-09T02:20:00Z/2021-12-12T04:20:00Z",
+                this.getTimeSpanFormat(),
                 this.metricType,
                 this.namespace
         );
@@ -62,7 +71,7 @@ public class AzureMetricsClient extends CloudMetricsClient {
         if (metricData.hasData()) {
             this.timestamps = metricData.getTimestamps();
             this.values = metricData.getValues();
-            this.logger.info(String.format("Succesfully stored metric data with %d values.", this.values.size()));
+            this.logger.info(String.format("Successfully stored metric data with %d values.", this.values.size()));
         }
         else {
             this.logger.severe("No metric data has been retrieved.");

@@ -45,6 +45,19 @@ public final class AzureRestApiWrapper {
         this.authenticate();
     }
 
+    public AzureMetricData getMetrics(HttpGet request) {
+        JSONObject response = this.getResponse(request);
+        AzureMetricData data = new AzureMetricData();
+        try {
+            data = new AzureMetricData(response, this.aggregation);
+        } catch (JSONException ex) {
+            throw new ParseException("Could not parse data from metric response. " +
+                    "Possibly no metrics available for given paramters. " +
+                    "The server did not return an error.");
+        }
+        return data;
+    }
+
     public void authenticate() {
         HttpPost request = this.createAuthRequest();
         JSONObject response = this.getResponse(request);
@@ -74,19 +87,6 @@ public final class AzureRestApiWrapper {
             this.logger.severe(ex.toString());
         }
         return request;
-    }
-
-    public AzureMetricData getMetrics(HttpGet request) {
-        JSONObject response = this.getResponse(request);
-        AzureMetricData data = new AzureMetricData();
-        try {
-            data = new AzureMetricData(response, this.aggregation);
-        } catch (JSONException ex) {
-            throw new ParseException("Could not parse data from metric response. " +
-                    "Possibly no metrics available for given paramters. " +
-                    "The server did not return an error.");
-        }
-        return data;
     }
 
     @NotNull

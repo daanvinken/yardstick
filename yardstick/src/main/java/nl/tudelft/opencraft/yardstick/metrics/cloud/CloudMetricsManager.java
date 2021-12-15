@@ -7,15 +7,15 @@ import nl.tudelft.opencraft.yardstick.metrics.cloud.aws.AwsMetricsClient;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.azure.AzureMetricsClient;
 
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class CloudMetricsManager {
     private final Config config;
-    private final LocalDateTime startTime;
-    private final LocalDateTime endTime;
+    private final Instant startTime;
+    private final Instant endTime;
     private final String platform;
 
-    public CloudMetricsManager(Config config, LocalDateTime startTime, LocalDateTime endTime) {
+    public CloudMetricsManager(Config config, Instant startTime, Instant endTime) {
     this.config = config;
     this.startTime = startTime;
     this.endTime = endTime;
