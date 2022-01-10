@@ -124,26 +124,26 @@ public class Yardstick {
             ex.setWorkloadDumper(new WorkloadDumper());
         }
 
-//        Thread t = new Thread(ex);
-//        t.setName("experiment-" + behaviorName);
-//
-//        t.start();
-//
-//
-//        //TODO join does not work on this thread because it spawns "child threads" ?
+        Thread t = new Thread(ex);
+        t.setName("experiment-" + behaviorName);
+
+        t.start();
+
+
+        //TODO join does not work on this thread because it spawns "child threads" ?
 //        t.join();
 
-        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
-            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
-            // TODO dynamic start & end-time also account for odd timezones
-            Instant endTime = Instant.now();
-            Instant startTime = Instant.now().minusSeconds(Long.parseLong("929394"));
-            CloudMetricsManager metricsManager = new CloudMetricsManager(cloudMetricsConfig,
-                                                                        startTime,
-                                                                        endTime
-            );
-            metricsManager.start();
-        }
+//        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
+//            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
+//            // TODO dynamic start & end-time also account for odd timezones
+//            Instant endTime = Instant.now();
+//            Instant startTime = Instant.now().minusSeconds(Long.parseLong("929394"));
+//            CloudMetricsManager metricsManager = new CloudMetricsManager(cloudMetricsConfig,
+//                                                                        startTime,
+//                                                                        endTime
+//            );
+//            metricsManager.start();
+//        }
     }
 
 }

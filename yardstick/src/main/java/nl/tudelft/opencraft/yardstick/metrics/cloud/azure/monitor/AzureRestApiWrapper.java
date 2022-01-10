@@ -1,4 +1,4 @@
-package nl.tudelft.opencraft.yardstick.metrics.cloud.azure;
+package nl.tudelft.opencraft.yardstick.metrics.cloud.azure.monitor;
 
 import nl.tudelft.opencraft.yardstick.logging.GlobalLogger;
 import nl.tudelft.opencraft.yardstick.logging.SubLogger;

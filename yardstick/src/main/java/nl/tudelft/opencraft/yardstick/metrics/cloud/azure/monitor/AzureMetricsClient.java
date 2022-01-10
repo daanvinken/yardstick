@@ -1,4 +1,4 @@
-package nl.tudelft.opencraft.yardstick.metrics.cloud.azure;
+package nl.tudelft.opencraft.yardstick.metrics.cloud.azure.monitor;
 
 import com.typesafe.config.Config;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsClient;

@@ -4,7 +4,7 @@ package nl.tudelft.opencraft.yardstick.metrics.cloud;
 import com.typesafe.config.Config;
 import kotlin.NotImplementedError;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.aws.AwsMetricsClient;
-import nl.tudelft.opencraft.yardstick.metrics.cloud.azure.AzureMetricsClient;
+import nl.tudelft.opencraft.yardstick.metrics.cloud.azure.monitor.AzureMetricsClient;
 
 import java.text.MessageFormat;
 import java.time.Instant;

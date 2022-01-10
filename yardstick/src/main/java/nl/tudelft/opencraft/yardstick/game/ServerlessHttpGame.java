@@ -13,21 +13,27 @@ import java.util.concurrent.CompletableFuture;
 import lombok.Data;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+import nl.tudelft.opencraft.yardstick.logging.GlobalLogger;
+import nl.tudelft.opencraft.yardstick.logging.SubLogger;
 
 public class ServerlessHttpGame implements GameArchitecture {
 
     private final Random random = new Random(System.currentTimeMillis());
     private final URI address;
+    private final SubLogger logger;
 
     public ServerlessHttpGame(URI address) {
+
         this.address = address;
+        this.logger = GlobalLogger.getLogger().newSubLogger("ServerlessHttpGame").newSubLogger("azure_test");
+        logger.info("Starting ServerlessHttpGame!");
     }
 
     @Override
     public CompletableFuture<InetSocketAddress> getAddressForPlayer() {
         String id = String.valueOf(random.nextInt());
         var client = HttpClient.newHttpClient();
-        NamingRequest namingRequest = new NamingRequest("servo/player:NAME" +
+        NamingRequest namingRequest = new NamingRequest("servo/player:USERNAME" +
                 "=" + id, Action.GET, Source.EXTERNAL);
         var request = HttpRequest.newBuilder(address)
                 .header("Content-Type", "application/json")
@@ -43,6 +49,12 @@ public class ServerlessHttpGame implements GameArchitecture {
             HttpResponse<String> rawResponse;
             try {
                 rawResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                logger.info(rawResponse.body().toString());
+                var gson = new Gson().fromJson(rawResponse.body(), NamingResponse.class);
+                logger.info(gson.getHostname().toString());
+//                logger.info(gson.getPort().toString());
+
+
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }

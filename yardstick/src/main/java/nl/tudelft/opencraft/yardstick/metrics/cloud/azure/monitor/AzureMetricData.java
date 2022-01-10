@@ -1,4 +1,4 @@
-package nl.tudelft.opencraft.yardstick.metrics.cloud.azure;
+package nl.tudelft.opencraft.yardstick.metrics.cloud.azure.monitor;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
