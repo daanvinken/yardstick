@@ -2,17 +2,11 @@ package nl.tudelft.opencraft.yardstick.metrics.cloud.aws;
 
 import com.typesafe.config.Config;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.CloudMetricsClient;
-
 import org.jetbrains.annotations.NotNull;
-import software.amazon.awssdk.services.cloudwatch.model.Dimension;
-import software.amazon.awssdk.services.cloudwatch.model.GetMetricDataRequest;
-import software.amazon.awssdk.services.cloudwatch.model.Metric;
-import software.amazon.awssdk.services.cloudwatch.model.MetricStat;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataQuery;
-import software.amazon.awssdk.services.cloudwatch.model.GetMetricDataResponse;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataResult;
-import software.amazon.awssdk.services.cloudwatch.model.CloudWatchException;
+import software.amazon.awssdk.services.cloudwatch.model.*;
 
+import java.io.*;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -21,22 +15,29 @@ import java.util.List;
 public class AwsMetricsClient extends CloudMetricsClient {
     private final LocalDateTime startTime;
     private final LocalDateTime endTime;
-    private final String metricType;
+    private final List<String> metricTypes;
     private final String namespace;
     private final String clusterName;
     private final int period;
     private final String statisticType;
+    private ArrayList<List<Double>> values;
+    private List<Instant> timestamps;
+
+
 
 
     public AwsMetricsClient(@NotNull Config config, LocalDateTime startTime, LocalDateTime endTime) {
-        super(config.getString("metric-name"), config.getString("namespace"));
+        super(config.getString("name"), config.getString("namespace"));
         this.startTime = startTime;
         this.endTime = endTime;
-        this.metricType = config.getString("metric-type");
+        this.metricTypes = config.getStringList("metric-types");
         this.namespace = config.getString("namespace");
         this.clusterName = config.getString("cluster-name");
         this.period = Integer.parseInt(config.getString("period"));
         this.statisticType = config.getString("statistic");
+
+        this.values = new ArrayList<>();
+        this.timestamps = new ArrayList<>();
 
         if (this.period < 60) {
             this.logger.warning("Please note you need to have high-precision metrics enabled " +
@@ -52,10 +53,60 @@ public class AwsMetricsClient extends CloudMetricsClient {
         availableMetrics.run();
 
         this.logger.info(String.format("Retrieving AWS metric '%s' for %s to %s with period '%ds'",
-                this.metricType,
+                this.metricTypes,
                 this.startTime.toString(),
                 this.endTime.toString(),
                 this.period));
+        }
+    }
+
+    private void writeMetricsToCSV() {
+        BufferedWriter bw = null;
+        try {
+            File outFile = new File(this.name + ".csv");
+            FileOutputStream fos = new FileOutputStream(outFile);
+            bw = new BufferedWriter(new OutputStreamWriter(fos));
+            List<String> current_line = new ArrayList<>();
+
+            /* Write headers */
+            current_line.add("Timestamp");
+            current_line.addAll(this.metricTypes);
+
+            /* Write current_line to csv */
+            for (int i = 0; i < this.timestamps.size(); i++) {
+                bw.write(String.join(",", current_line));
+                bw.newLine();
+
+                current_line.clear();
+                for (List<Double> value : this.values) {
+                    current_line.add(String.valueOf(value.get(i)));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void writeMetricsToArrays(List<MetricDataResult> metricResult) {
+        /* For now only loop once because we request 1 metric */
+        for (MetricDataResult item : metricResult) {
+            this.logger.info("Metric retrieval AWS status code: " + item.statusCode().toString());
+            if (item.hasValues() && item.hasTimestamps()) {
+                this.values.add(item.values());
+                this.timestamps = item.timestamps();
+                this.logger.info("Writing to CSV " + item.id());
+                this.logger.info(this.values.toString());
+                this.logger.info(this.timestamps.toString());
+            } else {
+                this.logger.warning("No data could be retrieved from AWS for the given metric and timerange.");
+            }
+
         }
     }
 
@@ -63,7 +114,7 @@ public class AwsMetricsClient extends CloudMetricsClient {
         List<MetricDataQuery> dq = new ArrayList<>();
         List<Dimension> dims = new ArrayList<>();
 
-        /* Retrieve CPU utilization for given timerange */
+        /* Retrieve ONE metric for given timerange */
         try {
             dims.add(Dimension.builder()
                     .name("ClusterName")
@@ -84,26 +135,28 @@ public class AwsMetricsClient extends CloudMetricsClient {
 //                    .build()
 //            );
 
+            for (String metricType : this.metricTypes) {
+                Metric met = Metric.builder()
+                        .metricName(metricType)
+                        .namespace(this.namespace)
+                        .dimensions(dims)
+                        .build();
 
-            Metric met = Metric.builder()
-                    .metricName(this.metricType)
-                    .namespace(this.namespace)
-                    .dimensions(dims)
-                    .build();
+                MetricStat metStat = MetricStat.builder()
+                        .stat(this.statisticType)
+                        .period(this.period)
+                        .metric(met)
+                        .build();
 
-            MetricStat metStat = MetricStat.builder()
-                    .stat(this.statisticType)
-                    .period(this.period)
-                    .metric(met)
-                    .build();
+                MetricDataQuery dataQuery = MetricDataQuery.builder()
+                        .metricStat(metStat)
+                        .id("data_" + metricType)
+                        .returnData(true)
+                        .build();
 
-            MetricDataQuery dataQuery = MetricDataQuery.builder()
-                    .metricStat(metStat)
-                    .id("foo3")
-                    .returnData(true)
-                    .build();
+                dq.add(dataQuery);
+            }
 
-            dq.add(dataQuery);
 
             GetMetricDataRequest getMetReq = GetMetricDataRequest.builder()
                     .startTime(this.startTime.toInstant(ZoneOffset.UTC))
@@ -114,17 +167,8 @@ public class AwsMetricsClient extends CloudMetricsClient {
             GetMetricDataResponse response = cw.getMetricData(getMetReq);
             List<MetricDataResult> data = response.metricDataResults();
 
-            for (MetricDataResult item : data) {
-                this.logger.info("Status " + item.statusCode().toString());
-                if (item.hasValues() && item.hasTimestamps()) {
-                    // TODO save values
-                    this.logger.info(item.values().toString());
-                    this.logger.info(item.timestamps().toString());
-                } else {
-                    this.logger.warning("No data could be retrieved from AWS for the given metric and timerange.");
-                }
-
-            }
+            this.writeMetricsToArrays(data);
+            this.writeMetricsToCSV();
 
         } catch (CloudWatchException e) {
             System.err.println(e.awsErrorDetails().errorMessage());

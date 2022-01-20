@@ -3,7 +3,6 @@ package nl.tudelft.opencraft.yardstick.metrics.cloud;
 
 import com.typesafe.config.Config;
 import nl.tudelft.opencraft.yardstick.metrics.cloud.aws.AwsMetricsClient;
-import nl.tudelft.opencraft.yardstick.metrics.cloud.aws.ListAvailableMetrics;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -27,7 +26,7 @@ public class CloudMetricsManager {
     public void start() {
         if (this.platform.equals("aws")) {
             AwsMetricsClient x = new AwsMetricsClient(
-                    this.config,
+                    this.config.getConfig("aws"),
                     this.startTime,
                     this.endTime
             );
