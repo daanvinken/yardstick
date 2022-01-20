@@ -34,7 +34,7 @@ cloud-metrics {
 
 ### 2. Make sure to have your AWS cli set up with `aws configure`
 
-### 3. In the [main yardstick file]() there are some notes on how to use it without an actual experiment.
+### 3. In the [main yardstick file](https://github.com/daanvinken/yardstick/blob/feature/aws_metrics/yardstick/src/main/java/nl/tudelft/opencraft/yardstick/Yardstick.java) there are some notes on how to use it without an actual experiment.
 You basically comment out the thread to start and can modify the amount of 
 minutes/hours you go want to go back in time for those metrics.
 
