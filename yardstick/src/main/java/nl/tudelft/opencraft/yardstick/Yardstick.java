@@ -129,21 +129,20 @@ public class Yardstick {
 
         t.start();
 
-
-        //TODO join does not work on this thread because it spawns "child threads" ?
+        // TODO join does not work yet
 //        t.join();
 
-//        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
-//            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
-//            // TODO dynamic start & end-time also account for odd timezones
-//            Instant endTime = Instant.now();
-//            Instant startTime = Instant.now().minusSeconds(Long.parseLong("929394"));
-//            CloudMetricsManager metricsManager = new CloudMetricsManager(cloudMetricsConfig,
-//                                                                        startTime,
-//                                                                        endTime
-//            );
-//            metricsManager.start();
-//        }
+        if (config.getBoolean("yardstick.player-emulation.arguments.cloud-metrics.enabled")) {
+            Config cloudMetricsConfig = config.getConfig("yardstick.player-emulation.arguments.cloud-metrics");
+            // TODO dynamic start & end-time also account for odd timezones
+            Instant endTime = Instant.now();
+            Instant startTime = Instant.now().minusSeconds(Long.parseLong("929394"));
+            CloudMetricsManager metricsManager = new CloudMetricsManager(cloudMetricsConfig,
+                                                                        startTime,
+                                                                        endTime
+            );
+            metricsManager.start();
+        }
     }
 
 }
