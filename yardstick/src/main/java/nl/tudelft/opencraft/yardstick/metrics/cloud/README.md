@@ -38,6 +38,8 @@ cloud-metrics {
 You basically comment out the thread to start and can modify the amount of 
 minutes/hours you go want to go back in time for those metrics.
 
-### 4. It should print metrics to the terminal (stdout) during the experiment and they will be stored in a csv in the same directory.
+### 4. Make sure to compile  (again) `mvn clean package`.
+
+### 5. It should print metrics to the terminal (stdout) during the experiment and they will be stored in a csv in the same directory.
 
 

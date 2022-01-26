@@ -124,7 +124,7 @@ public class Yardstick {
             ex.setWorkloadDumper(new WorkloadDumper());
         }
 
-        /* You can comment out this section, to only use the cloud metrics part for metrics in the past. */
+        /* You can comment out this section, to only use the cloud metrics part for metrics in the past of an earlier run. */
         Thread t = new Thread(ex);
         t.setName("experiment-" + behaviorName);
 
